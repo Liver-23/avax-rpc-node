@@ -1,0 +1,19 @@
+# Avalanche full node - mainnet, JSON-RPC on 9650
+# State sync is default (full node, non-archive)
+# See: https://build.avax.network/docs/nodes/run-a-node/using-docker
+
+services:
+  avax:
+    image: avaplatform/avalanchego:latest
+    container_name: mainnet-avax
+    restart: unless-stopped
+    ports:
+      - "9650:9650"   # HTTP RPC
+      - "9651:9651"   # P2P / staking
+    volumes:
+      - avax-data:/root/.avalanchego
+    # Mainnet is default; add flags if needed (e.g. --http-host=0.0.0.0)
+    command: ["--http-host=0.0.0.0"]
+
+volumes:
+  avax-data:
