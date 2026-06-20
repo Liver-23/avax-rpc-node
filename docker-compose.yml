@@ -1,23 +1,22 @@
-# Avalanche full node - mainnet, JSON-RPC on 9650
-# State sync is default (full node, non-archive)
+# Avalanche full node - mainnet or Fuji (AVAXT) selected via .env
 # See: https://build.avax.network/docs/nodes/run-a-node/using-docker
 
 services:
   avax:
-    image: avaplatform/avalanchego:latest
-    container_name: mainnet-avax
+    build: .
+    image: avax-rpc-node:local
+    container_name: ${CONTAINER_NAME:-avax-mainnet}
     restart: unless-stopped
+    environment:
+      AVAX_NETWORK: ${AVAX_NETWORK:-mainnet}
+      SNAPSHOT_RESTORE: ${SNAPSHOT_RESTORE:-true}
+      SNAPSHOT_URL: ${SNAPSHOT_URL:-}
+      SNAPSHOT_VARIANT: ${SNAPSHOT_VARIANT:-pruned}
     ports:
-      - "127.0.0.1:9650:9650"   # HTTP RPC (localhost only)
-      - "9651:9651"              # P2P / staking
+      - "127.0.0.1:${HTTP_PORT:-9650}:9650"   # HTTP RPC (localhost only)
+      - "${P2P_PORT:-9651}:9651"              # P2P / staking
     volumes:
-      # Bind mount: data lives in ./data (project dir), not Docker’s named volume store
-      - ./data:/root/.avalanchego
+      - ${DATA_DIR:-./data}:/root/.avalanchego
       - ./configs/chains/C/config.json:/root/.avalanchego/configs/chains/C/config.json:ro
-      # X / P: defaults match docs; mount so you can tune without changing compose paths later
       - ./configs/chains/X/config.json:/root/.avalanchego/configs/chains/X/config.json:ro
       - ./configs/chains/P/config.json:/root/.avalanchego/configs/chains/P/config.json:ro
-    command:
-      - ./avalanchego
-      - --http-host=0.0.0.0
-      - --system-tracker-disk-required-available-space-percentage=0

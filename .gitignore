@@ -1,2 +1,4 @@
 # Local node chain data (large; do not commit)
 /data/
+/data-fuji/
+.env

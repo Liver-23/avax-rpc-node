@@ -2,15 +2,52 @@
 
 ## `avax-rpc-node` (this repository)
 
-AvalancheGo **mainnet** full node via Docker:
+AvalancheGo full node via Docker for **mainnet** or **Fuji testnet (AVAXT)**.
 
-- **Compose**: `docker compose up -d` — see `docker-compose.yml`.
-- **Data**: `./data` → `/root/.avalanchego` (bind mount).
-- **Chain configs** (optional overrides; defaults follow [Avalanche chain config docs](https://build.avax.network/docs/nodes/chain-configs/primary-network/)):
-  - `configs/chains/C/config.json` — Coreth (JSON-RPC APIs, state sync, pruning, etc.).
-  - `configs/chains/X/config.json` — AVM / X-Chain (e.g. `checksums-enabled`).
-  - `configs/chains/P/config.json` — PlatformVM (caches, mempool, gossip); starts with doc defaults (`checksums-enabled` only; add keys as needed).
-- **Checks**: `scripts/check-avax-apis.py`, `scripts/check-avax-ws.py` against `AVAXspec.json`.
+### Setup
+
+1. Copy env template: `cp .env.example .env`
+2. Edit `.env`:
+   - `AVAX_NETWORK=mainnet` or `AVAX_NETWORK=fuji`
+   - `DATA_DIR=./data` (mainnet) or `DATA_DIR=./data-fuji` (testnet)
+3. Start: `docker compose up -d --build`
+
+Compose reads `.env` for network, data dir, ports, and snapshot settings.
+
+### Network selection (`.env`)
+
+| Variable | Mainnet | Fuji (AVAXT) |
+|----------|---------|--------------|
+| `AVAX_NETWORK` | `mainnet` | `fuji` |
+| `DATA_DIR` | `./data` | `./data-fuji` |
+| `CONTAINER_NAME` | `avax-mainnet` | `avax-fuji` |
+| Snapshot source | Latest pruned URL from [PublicNode snapshots](https://publicnode.com/snapshots) | Same (Fuji pruned) |
+
+Fuji adds `--network-id=fuji` automatically at container start.
+
+### Snapshots
+
+There was **no snapshot automation** before; the existing mainnet `./data` (~1.1 TB) was synced in place.
+
+On start, if `DATA_DIR/db` is empty and `SNAPSHOT_RESTORE=true` (default), the entrypoint resolves the latest pruned snapshot URL from [PublicNode snapshots](https://publicnode.com/snapshots) (URLs change frequently; nothing is hard-coded), then downloads and extracts it before launching AvalancheGo.
+
+Set `SNAPSHOT_RESTORE=false` to sync from scratch instead. Set `SNAPSHOT_URL` to pin a specific snapshot, or `SNAPSHOT_VARIANT=archive` for archive snapshots.
+
+First start with snapshot restore can take a long time (download + decompress + extract).
+
+### Chain configs
+
+Mounted into the data volume (see [Avalanche chain config docs](https://build.avax.network/docs/nodes/chain-configs/primary-network/)):
+
+- `configs/chains/C/config.json` — Coreth (JSON-RPC APIs, state sync toggle, pruning, etc.)
+- `configs/chains/X/config.json` — AVM / X-Chain
+- `configs/chains/P/config.json` — PlatformVM
+
+### Checks
+
+- Mainnet: `./scripts/check-avax-apis.py --spec AVAXspec.json`
+- Fuji: `./scripts/check-avax-apis.py --spec AVAXTspec.json`
+- WebSocket: `./scripts/check-avax-ws.py --spec AVAXspec.json` (or `AVAXTspec.json`)
 
 ---
 
