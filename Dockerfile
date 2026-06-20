@@ -4,6 +4,6 @@ FROM avaplatform/avalanchego:latest
 
 EXPOSE 9650 9651
 
-# Default: bind RPC to all interfaces for container access
+# Bind inside container; host-level restriction is done in docker-compose port mapping
 ENTRYPOINT ["/avalanchego/avalanchego"]
 CMD ["--http-host=0.0.0.0"]

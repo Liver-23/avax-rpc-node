@@ -1,0 +1,29 @@
+{
+  "eth-apis": [
+    "eth",
+    "eth-filter",
+    "net",
+    "web3",
+    "internal-eth",
+    "internal-blockchain",
+    "internal-transaction",
+    "internal-account",
+    "debug",
+    "internal-debug",
+    "debug-tracer"
+  ],
+  "debug": true,
+  "debug-tracer": true,
+  "pruning-enabled": true,
+  "state-sync-enabled": false,
+  "state-sync-skip-resume": false,
+  "state-sync-ids": "",
+  "state-sync-commit-interval": 16384,
+  "state-sync-min-blocks": 300000,
+  "state-sync-request-size": 1024,
+  "ws-cpu-refill-rate": 0,
+  "ws-cpu-max-stored": 0,
+  "allow-unfinalized-queries": false,
+  "warp-api-enabled": true,
+  "log-level": "info"
+}

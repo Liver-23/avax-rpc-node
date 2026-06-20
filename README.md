@@ -1,5 +1,19 @@
 # Multi-Chain Mainnet RPC Nodes
 
+## `avax-rpc-node` (this repository)
+
+AvalancheGo **mainnet** full node via Docker:
+
+- **Compose**: `docker compose up -d` — see `docker-compose.yml`.
+- **Data**: `./data` → `/root/.avalanchego` (bind mount).
+- **Chain configs** (optional overrides; defaults follow [Avalanche chain config docs](https://build.avax.network/docs/nodes/chain-configs/primary-network/)):
+  - `configs/chains/C/config.json` — Coreth (JSON-RPC APIs, state sync, pruning, etc.).
+  - `configs/chains/X/config.json` — AVM / X-Chain (e.g. `checksums-enabled`).
+  - `configs/chains/P/config.json` — PlatformVM (caches, mempool, gossip); starts with doc defaults (`checksums-enabled` only; add keys as needed).
+- **Checks**: `scripts/check-avax-apis.py`, `scripts/check-avax-ws.py` against `AVAXspec.json`.
+
+---
+
 Full-node (non-archive) RPC services for BTC, BCH, XLM, TRX, AVAX, and SONIC. Each chain runs via **Docker** or **systemd** as specified below.
 
 All paths are relative to **`/home/mainnet`** unless otherwise noted.

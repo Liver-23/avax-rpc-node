@@ -8,12 +8,16 @@ services:
     container_name: mainnet-avax
     restart: unless-stopped
     ports:
-      - "9650:9650"   # HTTP RPC
-      - "9651:9651"   # P2P / staking
+      - "127.0.0.1:9650:9650"   # HTTP RPC (localhost only)
+      - "9651:9651"              # P2P / staking
     volumes:
-      - avax-data:/root/.avalanchego
-    # Mainnet is default; add flags if needed (e.g. --http-host=0.0.0.0)
-    command: ["--http-host=0.0.0.0"]
-
-volumes:
-  avax-data:
+      # Bind mount: data lives in ./data (project dir), not Docker’s named volume store
+      - ./data:/root/.avalanchego
+      - ./configs/chains/C/config.json:/root/.avalanchego/configs/chains/C/config.json:ro
+      # X / P: defaults match docs; mount so you can tune without changing compose paths later
+      - ./configs/chains/X/config.json:/root/.avalanchego/configs/chains/X/config.json:ro
+      - ./configs/chains/P/config.json:/root/.avalanchego/configs/chains/P/config.json:ro
+    command:
+      - ./avalanchego
+      - --http-host=0.0.0.0
+      - --system-tracker-disk-required-available-space-percentage=0

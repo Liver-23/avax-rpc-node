@@ -1,0 +1,730 @@
+{
+    "Spec": {
+      "index": "AVALANCHEP",
+      "name": "avalanche p chain mainnet",
+      "enabled": true,
+      "reliability_threshold": 268435455,
+      "data_reliability_enabled": true,
+      "block_distance_for_finalized_data": 1,
+      "blocks_in_finalization_proof": 3,
+      "average_block_time": "2000",
+      "allowed_block_lag_for_qos_sync": "5",
+      "block_last_updated": "4899964",
+      "min_stake_provider": {
+        "denom": "ulava",
+        "amount": "5000000000"
+      },
+      "providers_types": "dynamic",
+      "imports": [],
+      "api_collections": [
+        {
+          "enabled": true,
+          "collection_data": {
+            "api_interface": "jsonrpc",
+            "internal_path": "/P",
+            "type": "POST",
+            "add_on": ""
+          },
+          "apis": [
+            {
+              "enabled": true,
+              "name": "platform.getBlock",
+              "compute_units": "20",
+              "extra_compute_units": "0",
+              "category": {
+                "deterministic": true,
+                "local": false,
+                "subscription": false,
+                "stateful": 0,
+                "hanging_api": false
+              },
+              "block_parsing": {
+                "parser_arg": [
+                  "latest"
+                ],
+                "parser_func": "DEFAULT",
+                "default_value": "",
+                "encoding": ""
+              },
+              "timeout_ms": "0",
+              "parsers": []
+            },
+            {
+              "enabled": true,
+              "name": "platform.getBlockByHeight",
+              "compute_units": "20",
+              "extra_compute_units": "0",
+              "category": {
+                "deterministic": true,
+                "local": false,
+                "subscription": false,
+                "stateful": 0,
+                "hanging_api": false
+              },
+              "block_parsing": {
+                "parser_arg": [
+                  "height",
+                  ":",
+                  "0"
+                ],
+                "parser_func": "PARSE_DICTIONARY_OR_ORDERED",
+                "default_value": "",
+                "encoding": ""
+              },
+              "timeout_ms": "0",
+              "parsers": []
+            },
+            {
+              "enabled": true,
+              "name": "platform.getBlockchainStatus",
+              "compute_units": "10",
+              "extra_compute_units": "0",
+              "category": {
+                "deterministic": false,
+                "local": true,
+                "subscription": false,
+                "stateful": 0,
+                "hanging_api": false
+              },
+              "block_parsing": {
+                "parser_arg": [
+                  "latest"
+                ],
+                "parser_func": "DEFAULT",
+                "default_value": "",
+                "encoding": ""
+              },
+              "timeout_ms": "0",
+              "parsers": []
+            },
+            {
+              "enabled": true,
+              "name": "platform.getCurrentSupply",
+              "compute_units": "10",
+              "extra_compute_units": "0",
+              "category": {
+                "deterministic": true,
+                "local": false,
+                "subscription": false,
+                "stateful": 0,
+                "hanging_api": false
+              },
+              "block_parsing": {
+                "parser_arg": [
+                  "latest"
+                ],
+                "parser_func": "DEFAULT",
+                "default_value": "",
+                "encoding": ""
+              },
+              "timeout_ms": "0",
+              "parsers": []
+            },
+            {
+              "enabled": true,
+              "name": "platform.getCurrentValidators",
+              "compute_units": "15",
+              "extra_compute_units": "0",
+              "category": {
+                "deterministic": false,
+                "local": false,
+                "subscription": false,
+                "stateful": 0,
+                "hanging_api": false
+              },
+              "block_parsing": {
+                "parser_arg": [
+                  "latest"
+                ],
+                "parser_func": "DEFAULT",
+                "default_value": "",
+                "encoding": ""
+              },
+              "timeout_ms": "0",
+              "parsers": []
+            },
+            {
+              "enabled": true,
+              "name": "platform.getFeeConfig",
+              "compute_units": "10",
+              "extra_compute_units": "0",
+              "category": {
+                "deterministic": true,
+                "local": false,
+                "subscription": false,
+                "stateful": 0,
+                "hanging_api": false
+              },
+              "block_parsing": {
+                "parser_arg": [
+                  "latest"
+                ],
+                "parser_func": "DEFAULT",
+                "default_value": "",
+                "encoding": ""
+              },
+              "timeout_ms": "0",
+              "parsers": []
+            },
+            {
+              "enabled": true,
+              "name": "platform.getFeeState",
+              "compute_units": "10",
+              "extra_compute_units": "0",
+              "category": {
+                "deterministic": true,
+                "local": false,
+                "subscription": false,
+                "stateful": 0,
+                "hanging_api": false
+              },
+              "block_parsing": {
+                "parser_arg": [
+                  "latest"
+                ],
+                "parser_func": "DEFAULT",
+                "default_value": "",
+                "encoding": ""
+              },
+              "timeout_ms": "0",
+              "parsers": []
+            },
+            {
+              "enabled": true,
+              "name": "platform.getHeight",
+              "compute_units": "10",
+              "extra_compute_units": "0",
+              "category": {
+                "deterministic": true,
+                "local": false,
+                "subscription": false,
+                "stateful": 0,
+                "hanging_api": false
+              },
+              "block_parsing": {
+                "parser_arg": [
+                  "latest"
+                ],
+                "parser_func": "DEFAULT",
+                "default_value": "",
+                "encoding": ""
+              },
+              "timeout_ms": "0",
+              "parsers": []
+            },
+            {
+              "enabled": true,
+              "name": "platform.getL1Validator",
+              "compute_units": "10",
+              "extra_compute_units": "0",
+              "category": {
+                "deterministic": true,
+                "local": false,
+                "subscription": false,
+                "stateful": 0,
+                "hanging_api": false
+              },
+              "block_parsing": {
+                "parser_arg": [
+                  "latest"
+                ],
+                "parser_func": "DEFAULT",
+                "default_value": "",
+                "encoding": ""
+              },
+              "timeout_ms": "0",
+              "parsers": []
+            },
+            {
+              "enabled": true,
+              "name": "platform.getProposedHeight",
+              "compute_units": "10",
+              "extra_compute_units": "0",
+              "category": {
+                "deterministic": false,
+                "local": true,
+                "subscription": false,
+                "stateful": 0,
+                "hanging_api": false
+              },
+              "block_parsing": {
+                "parser_arg": [
+                  "latest"
+                ],
+                "parser_func": "DEFAULT",
+                "default_value": "",
+                "encoding": ""
+              },
+              "timeout_ms": "0",
+              "parsers": []
+            },
+            {
+              "enabled": true,
+              "name": "platform.getMinStake",
+              "compute_units": "10",
+              "extra_compute_units": "0",
+              "category": {
+                "deterministic": true,
+                "local": false,
+                "subscription": false,
+                "stateful": 0,
+                "hanging_api": false
+              },
+              "block_parsing": {
+                "parser_arg": [
+                  "latest"
+                ],
+                "parser_func": "DEFAULT",
+                "default_value": "",
+                "encoding": ""
+              },
+              "timeout_ms": "0",
+              "parsers": []
+            },
+            {
+              "enabled": true,
+              "name": "platform.getStakingAssetID",
+              "compute_units": "10",
+              "extra_compute_units": "0",
+              "category": {
+                "deterministic": true,
+                "local": false,
+                "subscription": false,
+                "stateful": 0,
+                "hanging_api": false
+              },
+              "block_parsing": {
+                "parser_arg": [
+                  "latest"
+                ],
+                "parser_func": "DEFAULT",
+                "default_value": "",
+                "encoding": ""
+              },
+              "timeout_ms": "0",
+              "parsers": []
+            },
+            {
+              "enabled": true,
+              "name": "platform.getSubnet",
+              "compute_units": "10",
+              "extra_compute_units": "0",
+              "category": {
+                "deterministic": true,
+                "local": false,
+                "subscription": false,
+                "stateful": 0,
+                "hanging_api": false
+              },
+              "block_parsing": {
+                "parser_arg": [
+                  "latest"
+                ],
+                "parser_func": "DEFAULT",
+                "default_value": "",
+                "encoding": ""
+              },
+              "timeout_ms": "0",
+              "parsers": []
+            },
+            {
+              "enabled": true,
+              "name": "platform.getTimestamp",
+              "compute_units": "10",
+              "extra_compute_units": "0",
+              "category": {
+                "deterministic": true,
+                "local": false,
+                "subscription": false,
+                "stateful": 0,
+                "hanging_api": false
+              },
+              "block_parsing": {
+                "parser_arg": [
+                  "latest"
+                ],
+                "parser_func": "DEFAULT",
+                "default_value": "",
+                "encoding": ""
+              },
+              "timeout_ms": "0",
+              "parsers": []
+            },
+            {
+              "enabled": true,
+              "name": "platform.getTotalStake",
+              "compute_units": "10",
+              "extra_compute_units": "0",
+              "category": {
+                "deterministic": true,
+                "local": false,
+                "subscription": false,
+                "stateful": 0,
+                "hanging_api": false
+              },
+              "block_parsing": {
+                "parser_arg": [
+                  "latest"
+                ],
+                "parser_func": "DEFAULT",
+                "default_value": "",
+                "encoding": ""
+              },
+              "timeout_ms": "0",
+              "parsers": []
+            },
+            {
+              "enabled": true,
+              "name": "platform.getTx",
+              "compute_units": "20",
+              "extra_compute_units": "0",
+              "category": {
+                "deterministic": true,
+                "local": false,
+                "subscription": false,
+                "stateful": 0,
+                "hanging_api": false
+              },
+              "block_parsing": {
+                "parser_arg": [
+                  "latest"
+                ],
+                "parser_func": "DEFAULT",
+                "default_value": "",
+                "encoding": ""
+              },
+              "timeout_ms": "0",
+              "parsers": []
+            },
+            {
+              "enabled": true,
+              "name": "platform.getTxStatus",
+              "compute_units": "10",
+              "extra_compute_units": "0",
+              "category": {
+                "deterministic": false,
+                "local": false,
+                "subscription": false,
+                "stateful": 0,
+                "hanging_api": false
+              },
+              "block_parsing": {
+                "parser_arg": [
+                  "latest"
+                ],
+                "parser_func": "DEFAULT",
+                "default_value": "",
+                "encoding": ""
+              },
+              "timeout_ms": "0",
+              "parsers": []
+            },
+            {
+              "enabled": true,
+              "name": "platform.getUTXOs",
+              "compute_units": "20",
+              "extra_compute_units": "0",
+              "category": {
+                "deterministic": true,
+                "local": false,
+                "subscription": false,
+                "stateful": 0,
+                "hanging_api": false
+              },
+              "block_parsing": {
+                "parser_arg": [
+                  "latest"
+                ],
+                "parser_func": "DEFAULT",
+                "default_value": "",
+                "encoding": ""
+              },
+              "timeout_ms": "0",
+              "parsers": []
+            },
+            {
+              "enabled": true,
+              "name": "platform.getValidatorsAt",
+              "compute_units": "10",
+              "extra_compute_units": "0",
+              "category": {
+                "deterministic": true,
+                "local": false,
+                "subscription": false,
+                "stateful": 0,
+                "hanging_api": false
+              },
+              "block_parsing": {
+                "parser_arg": [
+                  "height",
+                  ":",
+                  "0"
+                ],
+                "parser_func": "PARSE_DICTIONARY_OR_ORDERED",
+                "default_value": "",
+                "encoding": ""
+              },
+              "timeout_ms": "0",
+              "parsers": []
+            },
+            {
+              "enabled": true,
+              "name": "platform.getAllValidatorsAt",
+              "compute_units": "15",
+              "extra_compute_units": "0",
+              "category": {
+                "deterministic": true,
+                "local": false,
+                "subscription": false,
+                "stateful": 0,
+                "hanging_api": false
+              },
+              "block_parsing": {
+                "parser_arg": [
+                  "height",
+                  ":",
+                  "0"
+                ],
+                "parser_func": "PARSE_DICTIONARY_OR_ORDERED",
+                "default_value": "",
+                "encoding": ""
+              },
+              "timeout_ms": "0",
+              "parsers": []
+            },
+            {
+              "enabled": true,
+              "name": "platform.getValidatorFeeConfig",
+              "compute_units": "10",
+              "extra_compute_units": "0",
+              "category": {
+                "deterministic": true,
+                "local": false,
+                "subscription": false,
+                "stateful": 0,
+                "hanging_api": false
+              },
+              "block_parsing": {
+                "parser_arg": [
+                  "latest"
+                ],
+                "parser_func": "DEFAULT",
+                "default_value": "",
+                "encoding": ""
+              },
+              "timeout_ms": "0",
+              "parsers": []
+            },
+            {
+              "enabled": true,
+              "name": "platform.getValidatorFeeState",
+              "compute_units": "10",
+              "extra_compute_units": "0",
+              "category": {
+                "deterministic": true,
+                "local": false,
+                "subscription": false,
+                "stateful": 0,
+                "hanging_api": false
+              },
+              "block_parsing": {
+                "parser_arg": [
+                  "latest"
+                ],
+                "parser_func": "DEFAULT",
+                "default_value": "",
+                "encoding": ""
+              },
+              "timeout_ms": "0",
+              "parsers": []
+            },
+            {
+              "enabled": true,
+              "name": "platform.issueTx",
+              "compute_units": "10",
+              "extra_compute_units": "0",
+              "category": {
+                "deterministic": false,
+                "local": false,
+                "subscription": false,
+                "stateful": 1,
+                "hanging_api": true
+              },
+              "block_parsing": {
+                "parser_arg": [
+                  "latest"
+                ],
+                "parser_func": "DEFAULT",
+                "default_value": "",
+                "encoding": ""
+              },
+              "timeout_ms": "0",
+              "parsers": []
+            },
+            {
+              "enabled": true,
+              "name": "platform.sampleValidators",
+              "compute_units": "10",
+              "extra_compute_units": "0",
+              "category": {
+                "deterministic": false,
+                "local": false,
+                "subscription": false,
+                "stateful": 0,
+                "hanging_api": false
+              },
+              "block_parsing": {
+                "parser_arg": [
+                  "latest"
+                ],
+                "parser_func": "DEFAULT",
+                "default_value": "",
+                "encoding": ""
+              },
+              "timeout_ms": "0",
+              "parsers": []
+            },
+            {
+              "enabled": true,
+              "name": "platform.validatedBy",
+              "compute_units": "10",
+              "extra_compute_units": "0",
+              "category": {
+                "deterministic": true,
+                "local": false,
+                "subscription": false,
+                "stateful": 0,
+                "hanging_api": false
+              },
+              "block_parsing": {
+                "parser_arg": [
+                  "latest"
+                ],
+                "parser_func": "DEFAULT",
+                "default_value": "",
+                "encoding": ""
+              },
+              "timeout_ms": "0",
+              "parsers": []
+            },
+            {
+              "enabled": true,
+              "name": "platform.validates",
+              "compute_units": "10",
+              "extra_compute_units": "0",
+              "category": {
+                "deterministic": true,
+                "local": false,
+                "subscription": false,
+                "stateful": 0,
+                "hanging_api": false
+              },
+              "block_parsing": {
+                "parser_arg": [
+                  "latest"
+                ],
+                "parser_func": "DEFAULT",
+                "default_value": "",
+                "encoding": ""
+              },
+              "timeout_ms": "0",
+              "parsers": []
+            }
+          ],
+          "headers": [],
+          "inheritance_apis": [],
+          "parse_directives": [
+            {
+              "function_tag": "GET_BLOCKNUM",
+              "function_template": "{\"jsonrpc\":\"2.0\",\"method\":\"platform.getHeight\",\"params\":{},\"id\":1}",
+              "result_parsing": {
+                "parser_arg": [
+                  "0",
+                  "height"
+                ],
+                "parser_func": "PARSE_CANONICAL",
+                "default_value": "",
+                "encoding": ""
+              },
+              "api_name": "platform.getHeight",
+              "parsers": []
+            },
+            {
+              "function_tag": "GET_BLOCK_BY_NUM",
+              "function_template": "{\"jsonrpc\":\"2.0\",\"method\":\"platform.getBlockByHeight\",\"params\":{\"height\":%d,\"encoding\":\"hex\"},\"id\":1}",
+              "result_parsing": {
+                "parser_arg": [
+                  "0",
+                  "block"
+                ],
+                "parser_func": "PARSE_CANONICAL",
+                "default_value": "",
+                "encoding": "hex"
+              },
+              "api_name": "platform.getBlockByHeight",
+              "parsers": []
+            }
+          ],
+          "extensions": [],
+          "verifications": [
+            {
+              "name": "health",
+              "parse_directive": {
+                "function_tag": "VERIFICATION",
+                "function_template": "{\"jsonrpc\":\"2.0\",\"method\":\"platform.getHeight\",\"params\":{},\"id\":1}",
+                "result_parsing": {
+                  "parser_arg": [
+                    "0",
+                    "height"
+                  ],
+                  "parser_func": "PARSE_CANONICAL",
+                  "default_value": "",
+                  "encoding": ""
+                },
+                "api_name": "platform.getHeight",
+                "parsers": []
+              },
+              "values": [
+                {
+                  "extension": "",
+                  "expected_value": "*",
+                  "latest_distance": "0",
+                  "severity": "Fail"
+                }
+              ]
+            },
+            {
+              "name": "staking-asset-id",
+              "parse_directive": {
+                "function_tag": "VERIFICATION",
+                "function_template": "{\"jsonrpc\":\"2.0\",\"method\":\"platform.getStakingAssetID\",\"params\":{\"subnetID\":\"11111111111111111111111111111111LpoYY\"},\"id\":1}",
+                "result_parsing": {
+                  "parser_arg": [
+                    "0",
+                    "assetID"
+                  ],
+                  "parser_func": "PARSE_CANONICAL",
+                  "default_value": "",
+                  "encoding": ""
+                },
+                "api_name": "platform.getStakingAssetID",
+                "parsers": []
+              },
+              "values": [
+                {
+                  "extension": "",
+                  "expected_value": "FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z",
+                  "latest_distance": "0",
+                  "severity": "Fail"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "contributor": [],
+      "contributor_percentage": null,
+      "shares": "1",
+      "identity": ""
+    }
+  }
