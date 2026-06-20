@@ -84,4 +84,4 @@ else
   echo "Using existing chain data in $DATA_DIR/db"
 fi
 
-exec /avalanchego/avalanchego "$@" $extra_args
+exec /avalanchego/build/avalanchego "$@" $extra_args
