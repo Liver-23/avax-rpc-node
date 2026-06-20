@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import http.client
 import json
 import sys
 import time
@@ -9,7 +10,6 @@ from collections import defaultdict
 
 
 def candidate_paths(internal_path: str) -> list[str]:
-    # Only /ext/bc/... paths are valid on AvalancheGo; bare /C/rpc, /P return 404 and break checks.
     mapping = {
         "": ["/ext/bc/C/rpc"],
         "/C/rpc": ["/ext/bc/C/rpc"],
@@ -20,9 +20,8 @@ def candidate_paths(internal_path: str) -> list[str]:
     return mapping.get(internal_path, [internal_path])
 
 
-# Some RPCs return very large payloads (e.g. full validator sets).
 METHOD_TIMEOUT_OVERRIDES: dict[str, float] = {
-    "platform.getValidatorsAt": 120.0,
+    "platform.getValidatorsAt": 30.0,
 }
 
 
@@ -55,6 +54,28 @@ def classify_response(resp: dict) -> tuple[bool, str]:
     return True, f"error-code-{code}"
 
 
+def bootstrap_status(base_url: str, timeout: float) -> dict[str, bool]:
+    status: dict[str, bool] = {}
+    url = base_url.rstrip("/") + "/ext/info"
+    for chain in ("C", "P", "X"):
+        payload = {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "info.isBootstrapped",
+            "params": {"chain": chain},
+        }
+        req = urllib.request.Request(
+            url,
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            body = json.loads(resp.read().decode("utf-8"))
+        status[chain] = bool(body.get("result", {}).get("isBootstrapped"))
+    return status
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Check enabled AVAX APIs from AVAXspec.json")
     parser.add_argument("--base-url", default="http://127.0.0.1:9650", help="AvalancheGo base URL")
@@ -62,17 +83,41 @@ def main() -> int:
     parser.add_argument(
         "--timeout",
         type=float,
-        default=60.0,
-        help="HTTP timeout per call in seconds (default 60; some methods use overrides)",
+        default=15.0,
+        help="HTTP timeout per call in seconds (default 15; some methods use overrides)",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Run checks even if one or more chains are not bootstrapped",
+    )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="Print each method as it is checked",
     )
     args = parser.parse_args()
+
+    try:
+        chains = bootstrap_status(args.base_url, timeout=min(args.timeout, 10.0))
+    except Exception as e:
+        print(f"ERROR: Could not reach node at {args.base_url}: {type(e).__name__}: {e}")
+        return 1
+
+    not_ready = [chain for chain, ready in chains.items() if not ready]
+    if not_ready:
+        msg = f"Chains not bootstrapped: {', '.join(not_ready)}"
+        if not args.force:
+            print(f"ERROR: {msg}")
+            print("Wait for bootstrap to finish, or re-run with --force.")
+            return 1
+        print(f"WARNING: {msg} (continuing because --force was set)")
 
     with open(args.spec, "r", encoding="utf-8") as f:
         spec = json.load(f)
 
-    collections = spec["Spec"]["api_collections"]
     checks = []
-    for collection in collections:
+    for collection in spec["Spec"]["api_collections"]:
         if not collection.get("enabled", False):
             continue
         internal_path = collection["collection_data"]["internal_path"]
@@ -88,9 +133,21 @@ def main() -> int:
     ok = 0
     failed = []
     failures_by_path = defaultdict(int)
+    request_errors = (
+        urllib.error.URLError,
+        urllib.error.HTTPError,
+        TimeoutError,
+        json.JSONDecodeError,
+        http.client.RemoteDisconnected,
+        ConnectionResetError,
+        BrokenPipeError,
+    )
 
     started = time.time()
-    for internal_path, method in checks:
+    for index, (internal_path, method) in enumerate(checks, start=1):
+        if args.verbose:
+            print(f"[{index}/{total}] {internal_path or '/'} {method}", flush=True)
+
         path_ok = False
         last_reason = "request-failed"
         for p in candidate_paths(internal_path):
@@ -103,8 +160,9 @@ def main() -> int:
                     path_ok = True
                     break
                 last_reason = reason
-            except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, json.JSONDecodeError) as e:
+            except request_errors as e:
                 last_reason = f"request-failed:{type(e).__name__}"
+
         if path_ok:
             ok += 1
         else:

@@ -29,7 +29,13 @@ Fuji adds `--network-id=fuji` automatically at container start.
 
 There was **no snapshot automation** before; the existing mainnet `./data` (~1.1 TB) was synced in place.
 
-On start, if `DATA_DIR/db` is empty and `SNAPSHOT_RESTORE=true` (default), the entrypoint resolves the latest pruned snapshot URL from [PublicNode snapshots](https://publicnode.com/snapshots) (URLs change frequently; nothing is hard-coded), then downloads and extracts it before launching AvalancheGo.
+On start, if `DATA_DIR/db` is empty and `SNAPSHOT_RESTORE=true` (default), the entrypoint resolves the latest pruned snapshot URL from [PublicNode snapshots](https://publicnode.com/snapshots) (URLs change frequently; nothing is hard-coded), then streams it through `lz4` into `tar` without saving a temporary archive on disk:
+
+```bash
+curl -fL "$SNAPSHOT_URL" | lz4 -dc | tar -xf - -C "$DATA_DIR/db"
+```
+
+PublicNode pruned snapshots unpack as `mainnet/v1.4.5/...` or `fuji/v1.4.5/...` under `db/`. Override extract dir with `SNAPSHOT_EXTRACT_DIR` if needed.
 
 Set `SNAPSHOT_RESTORE=false` to sync from scratch instead. Set `SNAPSHOT_URL` to pin a specific snapshot, or `SNAPSHOT_VARIANT=archive` for archive snapshots.
 

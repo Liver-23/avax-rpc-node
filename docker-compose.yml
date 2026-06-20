@@ -12,6 +12,7 @@ services:
       SNAPSHOT_RESTORE: ${SNAPSHOT_RESTORE:-true}
       SNAPSHOT_URL: ${SNAPSHOT_URL:-}
       SNAPSHOT_VARIANT: ${SNAPSHOT_VARIANT:-pruned}
+      SNAPSHOT_EXTRACT_DIR: ${SNAPSHOT_EXTRACT_DIR:-}
     ports:
       - "127.0.0.1:${HTTP_PORT:-9650}:9650"   # HTTP RPC (localhost only)
       - "${P2P_PORT:-9651}:9651"              # P2P / staking

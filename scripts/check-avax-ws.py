@@ -8,13 +8,12 @@ import socket
 import ssl
 import struct
 import sys
+import time
 from urllib.parse import urlparse
 
 
 GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 
-
-# C-Chain JSON-RPC collections in AVAXspec may use "", "/C/rpc", or "/ext/bc/C/rpc"
 C_CHAIN_SPEC_PATHS = frozenset({"", "/C/rpc", "/ext/bc/C/rpc"})
 
 
@@ -35,7 +34,7 @@ def enabled_ws_methods(spec_path: str) -> set[str]:
 
 
 class WebSocketClient:
-    def __init__(self, ws_url: str, timeout: float = 8.0):
+    def __init__(self, ws_url: str, timeout: float = 15.0):
         self.ws_url = ws_url
         self.timeout = timeout
         self.sock = None
@@ -80,7 +79,7 @@ class WebSocketClient:
         if self.sock is None:
             return
         try:
-            self._send_frame(opcode=0x8, payload=b"")
+            self._send_frame(opcode=0x8, payload=b"", fin=True)
         except Exception:
             pass
         try:
@@ -90,17 +89,25 @@ class WebSocketClient:
 
     def send_json(self, obj: dict) -> None:
         data = json.dumps(obj).encode("utf-8")
-        self._send_frame(opcode=0x1, payload=data)
+        self._send_frame(opcode=0x1, payload=data, fin=True)
 
-    def recv_json(self) -> dict:
-        while True:
-            opcode, payload = self._recv_frame()
-            if opcode == 0x1:
-                return json.loads(payload.decode("utf-8"))
-            if opcode == 0x9:  # ping
-                self._send_frame(opcode=0xA, payload=payload)  # pong
-            elif opcode == 0x8:  # close
+    def recv_json_rpc(self, expected_id: int) -> dict:
+        deadline = time.monotonic() + self.timeout
+        while time.monotonic() < deadline:
+            opcode, payload = self._recv_message()
+            if opcode == 0x9:
+                self._send_frame(opcode=0xA, payload=payload, fin=True)
+                continue
+            if opcode == 0x8:
                 raise RuntimeError("Server closed connection")
+            if opcode != 0x1:
+                continue
+            msg = json.loads(payload.decode("utf-8"))
+            if msg.get("method") == "eth_subscription":
+                continue
+            if msg.get("id") == expected_id:
+                return msg
+        raise TimeoutError(f"Timed out waiting for JSON-RPC response id={expected_id}")
 
     def _recv_http_headers(self, sock_obj: socket.socket) -> str:
         data = b""
@@ -111,10 +118,10 @@ class WebSocketClient:
             data += chunk
         return data.decode("latin-1", errors="replace")
 
-    def _send_frame(self, opcode: int, payload: bytes) -> None:
+    def _send_frame(self, opcode: int, payload: bytes, fin: bool) -> None:
         if self.sock is None:
             raise RuntimeError("WebSocket is not connected")
-        fin_opcode = 0x80 | (opcode & 0x0F)
+        fin_opcode = (0x80 if fin else 0x00) | (opcode & 0x0F)
         mask_bit = 0x80
         n = len(payload)
         header = bytearray([fin_opcode])
@@ -142,8 +149,9 @@ class WebSocketClient:
             out += chunk
         return out
 
-    def _recv_frame(self) -> tuple[int, bytes]:
+    def _recv_frame(self) -> tuple[int, bytes, bool]:
         b1, b2 = self._recv_exact(2)
+        fin = (b1 & 0x80) != 0
         opcode = b1 & 0x0F
         masked = (b2 & 0x80) != 0
         length = b2 & 0x7F
@@ -155,7 +163,20 @@ class WebSocketClient:
         payload = self._recv_exact(length) if length else b""
         if mask:
             payload = bytes(b ^ mask[i % 4] for i, b in enumerate(payload))
-        return opcode, payload
+        return opcode, payload, fin
+
+    def _recv_message(self) -> tuple[int, bytes]:
+        message_opcode = None
+        parts: list[bytes] = []
+        while True:
+            opcode, payload, fin = self._recv_frame()
+            if message_opcode is None:
+                message_opcode = opcode
+            elif opcode != 0x0:
+                raise RuntimeError(f"Unexpected frame opcode {opcode} in fragmented message")
+            parts.append(payload)
+            if fin:
+                return message_opcode, b"".join(parts)
 
 
 def ws_candidates(base_url: str) -> list[str]:
@@ -164,7 +185,6 @@ def ws_candidates(base_url: str) -> list[str]:
     parsed = urlparse(base_url)
     scheme = "wss" if parsed.scheme == "https" else "ws"
     base = f"{scheme}://{parsed.netloc}"
-    # AvalancheGo serves WS on /ext/bc/C/ws (bare /C/ws is not valid on stock nodes)
     return [
         f"{base}/ext/bc/C/ws",
         f"{base}/ext/bc/C/rpc/ws",
@@ -186,19 +206,18 @@ def run_check(ws_url: str, timeout: float, methods: set[str]) -> tuple[bool, str
     ws = WebSocketClient(ws_url, timeout=timeout)
     ws.connect()
     try:
+        sub_id = None
         if "eth_subscribe" in methods:
             ws.send_json({"jsonrpc": "2.0", "id": 1, "method": "eth_subscribe", "params": ["newHeads"]})
-            sub_resp = ws.recv_json()
+            sub_resp = ws.recv_json_rpc(1)
             ok, reason = rpc_ok(sub_resp)
             if not ok:
                 return False, f"eth_subscribe:{reason}"
             sub_id = sub_resp.get("result")
-        else:
-            sub_id = None
 
         if "eth_unsubscribe" in methods and sub_id:
             ws.send_json({"jsonrpc": "2.0", "id": 2, "method": "eth_unsubscribe", "params": [sub_id]})
-            unsub_resp = ws.recv_json()
+            unsub_resp = ws.recv_json_rpc(2)
             ok, reason = rpc_ok(unsub_resp)
             if not ok:
                 return False, f"eth_unsubscribe:{reason}"
@@ -212,7 +231,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Check AVAX WebSocket RPC methods from AVAXspec.json")
     parser.add_argument("--base-url", default="http://127.0.0.1:9650", help="Base HTTP URL of AvalancheGo")
     parser.add_argument("--spec", default="AVAXspec.json", help="Path to AVAXspec.json")
-    parser.add_argument("--timeout", type=float, default=60.0, help="WebSocket timeout in seconds")
+    parser.add_argument("--timeout", type=float, default=15.0, help="WebSocket timeout in seconds")
     args = parser.parse_args()
 
     methods = enabled_ws_methods(args.spec)

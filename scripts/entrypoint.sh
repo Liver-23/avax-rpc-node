@@ -1,5 +1,5 @@
-#!/bin/sh
-set -eu
+#!/bin/bash
+set -euo pipefail
 
 DATA_DIR="/root/.avalanchego"
 NETWORK="${AVAX_NETWORK:-mainnet}"
@@ -26,43 +26,21 @@ resolve_snapshot_url() {
 
 restore_snapshot() {
   url="$(resolve_snapshot_url)"
-  tmpdir=""
-  tmpdir="$(mktemp -d)"
-  archive="${tmpdir}/snapshot.tar.lz4"
-  tarball="${tmpdir}/snapshot.tar"
-
-  cleanup() {
-    rm -rf "$tmpdir"
-  }
-  trap cleanup EXIT
+  extract_dir="${SNAPSHOT_EXTRACT_DIR:-$DATA_DIR/db}"
 
   echo "Data directory is empty; restoring snapshot from:"
   echo "  $url"
-  mkdir -p "$DATA_DIR"
+  echo "Streaming download | lz4 -dc | tar -xf - into ${extract_dir}"
+  mkdir -p "$extract_dir"
 
   if command -v curl >/dev/null 2>&1; then
-    curl -fL --retry 3 --retry-delay 5 --progress-bar "$url" -o "$archive"
+    curl -fL --retry 3 --retry-delay 5 "$url" | lz4 -dc | tar -xf - -C "$extract_dir"
   elif command -v wget >/dev/null 2>&1; then
-    wget -O "$archive" "$url"
+    wget -qO- "$url" | lz4 -dc | tar -xf - -C "$extract_dir"
   else
     echo "ERROR: curl or wget is required for snapshot restore" >&2
     exit 1
   fi
-
-  lz4 -d "$archive" "$tarball"
-
-  first="$(tar -tf "$tarball" | head -1)"
-  case "$first" in
-    .avalanchego/*|.avalanchego)
-      tar -xf "$tarball" -C /root
-      ;;
-    ./db/*|./chainData/*|db/*|chainData/*)
-      tar -xf "$tarball" -C "$DATA_DIR" --strip-components=1
-      ;;
-    *)
-      tar -xf "$tarball" -C "$DATA_DIR"
-      ;;
-  esac
 
   echo "Snapshot restore complete."
 }
